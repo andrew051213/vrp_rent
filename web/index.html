@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" />
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+
+<body>
+    <div id="app" class="absolute inset-0 w-full h-full bg-[url(assets/bg.png)] bg-no-repeat bg-cover" v-show="ui.active">
+        <!-- <div class="absolute -top-32 -left-32 w-96 h-96 bg-white/20 blur-3xl rounded-full opacity-70"></div> -->
+
+        <div class="flex justify-center items-center w-full h-full bg-[url(assets/shadow.png)] absolute bg-cover z-50" v-if="prompt.active">
+            <div class="w-full max-w-[488px] bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.3)] rounded-xl">
+                <div class="flex flex-col p-6">
+                    <div class="text-white barlow-bold text-2xl">CONFIRMĂ PLATA</div>
+
+                    <div class="text-white barlow-regular">Confirma inchirierea vehiculului {{ prompt['vehicle']['vehicleName'] }}</div>
+                </div>
+
+                <div class="w-full h-[2px] bg-[rgba(255,255,255,0.08)] -mt-2"></div>
+
+                <div class="flex flex-col p-6">
+                    <div class="text-white barlow-semibold text-xl">Selecteaza culoarea</div>
+
+                    <div class="text-white/70 barlow-regular">Alege culoarea dorita pentru vehicul</div>
+
+                    <div class="flex flex-row mt-2 gap-2">
+                        <button 
+                          v-for="(color, index) in Object.keys(prompt.colors)" 
+                          @click="selectColor(color)"
+                          :key="index"
+                          :style="{ backgroundColor: color }" 
+                          class="w-8 h-8 rounded-lg"
+                          :class="{ 'scale-110': prompt.activeColor === color }">
+                        </button>
+                      </div>                      
+                </div>
+
+                <div class="flex flex-col p-6 -mt-5">
+                    <div class="text-white barlow-semibold text-xl">Selecteaza metoda de plata</div>
+
+                    <div class="text-white/70 barlow-regular">Alege metoda de plata pentru inchirierea vehiculului</div>
+
+                    <div class="flex flex-row mt-2 gap-2">
+                        <button class="p-4 rounded-2xl barlow-semibold uppercase" :class="{ 'bg-[#33fdb4] text-[#2D2D2D]': prompt.paymentMethod === 'cash', 'bg-white/5 text-white': prompt.paymentMethod !== 'cash' }" @click="selectMethod('cash')">Cash</button>
+                        <button class="p-4 rounded-2xl barlow-semibold uppercase" :class="{ 'bg-[#33fdb4] text-[#2D2D2D]': prompt.paymentMethod === 'bank', 'bg-white/5 text-white': prompt.paymentMethod !== 'bank' }" @click="selectMethod('bank')">Bancar</button>
+                    </div>
+                </div>
+
+                <div class="w-full h-[2px] bg-[rgba(255,255,255,0.08)] -mt-2"></div>
+
+                <div class="flex flex-row justify-center items-center my-5 gap-5 mx-6">
+                    <button class="p-4 bg-white/10 text-white w-full rounded-2xl hover:bg-[#33fdb4] hover:text-black barlow-medium" @click="closePrompt()">ANULEAZA</button>
+                    <button class="p-4 bg-white/10 text-white w-full rounded-2xl hover:bg-[#33fdb4] hover:text-black barlow-medium" @click="confirmPrompt('buyCar')">CONFIRMA</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute left-24 top-16 flex flex-col">
+            <div class="text-white text-3xl uppercase barlow-regular font-medium">Închiriază un Vehicul</div>
+
+            <div class="text-white/80 text-xl barlow-regular font-regular">Închiriază un vehiclul dorit din cele disponibile</div>
+
+            <button class="p-3 bg-[#33fdb4] w-48 rounded-full mt-5">
+                <div class="flex justify-center items-center gap-4">
+                    <i class="fa-solid fa-motorcycle text-lg"></i> 
+                    
+                    <div class="text-black barlow-regular text-lg">Motociclete</div>
+                </div>
+            </button>
+
+            <div class="grid grid-cols-4 gap-[20px] h-full w-full max-h-[70vh] scrollBar">
+                <div class="relative bg-[rgba(255,255,255,0.08)] w-[408px] h-auto mt-10 rounded-2xl relative flex flex-col" v-for="(data, index) in ui.carData" :key="index">
+                    <div class="flex-grow p-6">
+                        <div class="text-white text-xl barlow-regular font-bold">{{ data['carName'] }}</div>
+                
+                        <div class="text-white/80 barlow-regular text-sm">{{ data['carDescription'] }}</div>
+                    </div>
+                
+                    <div class="self-start border-t-2 border-t-white/10 w-full mt-14">
+                        <div class="flex justify-between items-center p-6">
+                            <div class="flex gap-2 items-center">
+                                <div class="text-white text-[28px] barlow-regular font-bold">${{ data['carPrice'] | formatnum }}</div>
+                                
+                                <div class="text-white/50 text-[14px] barlow-regular mt-1 -ml-1">PRET</div>
+                            </div>
+
+                            <button class="bg-[#33fdb4] w-28 h-10 text-center rounded-full font-medium hover:shadow-[0_0_10px_#33fdb4,_0_0_1px_#33fdb4] transition-shadow duration-300" @click="showPrompt(data)">
+                                Mai departe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Vue.filter('formatnum', (x) => {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        })
+    </script>
+
+    <script type="module" src="vue.js"></script>
+</body>
+
+</html>
