@@ -27,6 +27,3 @@ ui_page_preload "yes"
 files({
 	"web/**/*",
 })
-
-
-shared_script '@nac/nova-module.lua'
